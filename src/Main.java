@@ -1,38 +1,56 @@
-import com.Pac1.AbstractModel;
 import com.Pac1.OperationStage;
 import com.Pac1.OperationType;
 import com.Pac1.PrintService;
 
+import java.time.*;
+import java.time.temporal.TemporalAdjusters;
 import java.util.*;
-import java.util.stream.Collectors;
+import java.util.concurrent.BrokenBarrierException;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.Exchanger;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
 public class Main {
 
-    public static void main(String[] args)
+
+    public static void main(String[] args) throws InterruptedException
     {
-        OperationStage firstSt=new OperationStage(1);
-        OperationType firstTp=new OperationType(1);
-        PrintService g = new PrintService() {
-
-        };
-        g.printType(firstSt);
-        g.printType(firstTp);
-        Integer[] arr = {1,2,3,4,5,6,7};
-        List<Integer> collection= new ArrayList<Integer>(Arrays.asList(arr));
-        //Optional<Integer> gt = collection.parallelStream().filter(o -> o >= 2).reduce();
-        Scanner snr = new Scanner(System.in);
-        Stream<String> s = Stream.generate(()->snr.next());
-        //List<String> strR = s.forEach(t->(t+" ")).s.filter(str->!str.startsWith("d")).forEach((t)->t+"56");
-
-        List<Integer> list2 = Arrays.asList(2, 3, 4);
-        list2.parallelStream().forEach(System.out::println);
-        // list2.forEach();
-        List<Integer> collect = list2.stream().map(e -> {
-            return e+1;
-        }).collect(Collectors.toList());
-
-        collect.forEach(System.out::println);
+        CyclicBarrier cyclicBarrier = new CyclicBarrier(3, new Run());
+        new Person(cyclicBarrier);
+        new Person(cyclicBarrier);
+        new Person(cyclicBarrier);
 
     }
+    static class Run extends Thread{
+        @Override
+        public void run() {
+            System.out.println("Собрались то наконец");
+        }
+    }
+    static class Person extends Thread
+    {
+        CyclicBarrier cyclicBarrier;
+
+        public Person(CyclicBarrier cyclicBarrier) throws InterruptedException {
+            this.cyclicBarrier = cyclicBarrier;
+           // sleep(1000);
+            start();
+        }
+
+        @Override
+        public void run() {
+            try {
+
+                cyclicBarrier.await();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            } catch (BrokenBarrierException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
 }
+
